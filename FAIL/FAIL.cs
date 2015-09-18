@@ -104,8 +104,7 @@ namespace FAIL
             try
             {
                 MessageBox.Show("Select runebook to add...");
-                var _targetHelper = TargetHelper.GetTarget();
-                Item _itemRunebook = _targetHelper.GetTargetItem();
+                Item _itemRunebook = GetTargetItem();
 
                 Runebooks.Add(_itemRunebook.Serial.Value);
 
@@ -305,8 +304,7 @@ namespace FAIL
         }
         private void btnDebugGetID_Click(object sender, EventArgs e)
         {
-            var _targetHelper = TargetHelper.GetTarget();
-            Item _result = _targetHelper.GetTargetItem();
+            Item _result = GetTargetItem();
 
             List<ClilocItemRec> _properties = Stealth.Client.GetClilocRec(_result.Serial.Value);
 
@@ -382,8 +380,7 @@ namespace FAIL
             try
             {
                 MessageBox.Show("Select runebook...");
-                var _targetHelper = TargetHelper.GetTarget();
-                Item _itemRunebook = _targetHelper.GetTargetItem();
+                Item _itemRunebook = GetTargetItem();
 
                 Settings.HomeRunebookID = _itemRunebook.Serial.Value;
 
@@ -656,6 +653,13 @@ namespace FAIL
         #endregion
 
         #region Methods
+        
+        public Item GetTargetItem()
+        {
+            Stealth.Client.ClientRequestObjectTarget();
+            while (Stealth.Client.ClientTargetResponsePresent() == false);
+            return new Item(new Serial(Stealth.Client.ClientTargetResponse().ID));
+        }
         private void CreateXMLFile(string Filename)
         {
             XmlDocument _doc = new XmlDocument();
