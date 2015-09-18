@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -10,12 +11,14 @@ using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
 using ScriptSDK;
-using ScriptSDK.Mobiles;
-using ScriptSDK.Engines;
-using ScriptDotNet2;
-using ScriptDotNet2.Data;
-using ScriptAPI;
+using ScriptSDK.API;
 using ScriptSDK.Attributes;
+using ScriptSDK.Engines;
+using ScriptSDK.Gumps;
+using ScriptSDK.Items;
+using ScriptSDK.Mobiles;
+
+
 
 namespace FAIL
 {
@@ -23,7 +26,8 @@ namespace FAIL
     {
 
         #region Vars
-        private bool BuildingRail, BuildingRailPause, FAILFormClosing, Searching;
+        private PlayerMobile Self = PlayerMobile.GetPlayer();
+        private bool BuildingRail, BuildingRailPause, Searching, StealthSearch, FAILFormClosing;
         private string RailFilePath, HouseFilePath, SettingsFilePath;
         private Rail SelectedRail, CurrentRail;
         private List<Rail> SelectedRails = new List<Rail>();
@@ -46,28 +50,34 @@ namespace FAIL
             {
                 System.Deployment.Application.ApplicationDeployment ad =
                     System.Deployment.Application.ApplicationDeployment.CurrentDeployment;
-                this.Text = String.Format("FAIL (Fully Automated IDOC Looter) {0}", ad.CurrentVersion);
+                Text = String.Format("FAIL (Fully Automated IDOC Looter) {0}", ad.CurrentVersion);
             }
 
-            RailFilePath = Directory.GetCurrentDirectory() + "\\rails.xml";
-            HouseFilePath = Directory.GetCurrentDirectory() + "\\houses.xml";
-            SettingsFilePath = Directory.GetCurrentDirectory() + "\\settings.xml";
+            string _myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string _scriptPath = _myDocuments + "\\Stealth\\FAIL";
+                        
+            RailFilePath = _scriptPath + "\\rails.xml";
+            HouseFilePath = _scriptPath + "\\houses.xml";
+            SettingsFilePath = _scriptPath + "\\settings.xml";
 
         }
         private void FAIL_Load(object sender, EventArgs e)
         {
             try
             {
-                if (!Profile.IsConnected)
+                if (!(Stealth.Client.GetConnectedStatus()))
                     MessageBox.Show("Please connect a profile in Stealth and try again.");
 
                 var Player = PlayerMobile.GetPlayer();
                 Player.Backpack.Use();
-                /*
-                LoadRails();
-                LoadHouses();
-                LoadSettings();
-                */
+
+                if (File.Exists(RailFilePath))
+                    LoadRails();
+                if (File.Exists(HouseFilePath))
+                    LoadHouses();
+                if (File.Exists(SettingsFilePath))
+                    LoadSettings();
+                
             }
             catch (Exception x)
             {
@@ -84,8 +94,7 @@ namespace FAIL
                 FAILFormClosing = true;
                 e.Cancel = true;
             }
-
-            //base.OnFormClosing(e);
+            
         }
         private void FAIL_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -95,9 +104,10 @@ namespace FAIL
             try
             {
                 MessageBox.Show("Select runebook to add...");
-                Item _itemRunebook = Target.RequestTarget();
+                var _targetHelper = TargetHelper.GetTarget();
+                Item _itemRunebook = _targetHelper.GetTargetItem();
 
-                Runebooks.Add(_itemRunebook.ID);
+                Runebooks.Add(_itemRunebook.Serial.Value);
 
                 listRunebooks.DataSource = null;
                 listRunebooks.DataSource = Runebooks;
@@ -247,34 +257,7 @@ namespace FAIL
         }
         private void btnLoadRails_Click(object sender, EventArgs e)
         {
-            try
-            {
-                XmlSerializer _deserializer = new XmlSerializer(typeof(List<Rail>));
-                TextReader _reader = new StreamReader(RailFilePath);
-                object obj = _deserializer.Deserialize(_reader);
-                Rails = (List<Rail>)obj;
-                _reader.Close();
-
-                List<string> _railNames = new List<string>();
-
-                foreach (Rail _r in Rails)
-                {
-                    _railNames.Add(_r.Name);
-                    Runebooks.Add(_r.RunebookID);
-                }
-
-                Runebooks = Runebooks.Distinct().ToList();
-
-                listRunebooks.DataSource = null;
-                listRunebooks.DataSource = Runebooks;
-
-                listRails.DataSource = null;
-                listRails.DataSource = _railNames;
-            }
-            catch (Exception x)
-            {
-                MessageBox.Show(x.Message.ToString());
-            }
+            LoadRails();
         }
         private void btnResetRails_Click(object sender, EventArgs e)
         {
@@ -295,7 +278,7 @@ namespace FAIL
                         if (listRails.GetSelected(x) == true)
                             SelectedRails.Add(Rails[x]);
                     }
-
+                    StealthSearch = cboxStealthSearch.Checked;
                     Searching = true;
                     workerSearch.RunWorkerAsync();
                     workerCheckHouses.RunWorkerAsync();
@@ -318,36 +301,14 @@ namespace FAIL
         }
         private void btnLoadHouses_Click(object sender, EventArgs e)
         {
-            try
-            {
-                XmlSerializer _deserializer = new XmlSerializer(typeof(List<House>));
-                TextReader _reader = new StreamReader(HouseFilePath);
-                object obj = _deserializer.Deserialize(_reader);
-                Houses = (List<House>)obj;
-                _reader.Close();
-
-                List<string> _houseNames = new List<string>();
-
-                foreach (House _house in Houses)
-                {
-                    _houseNames.Add(_house.Tooltip);
-                }
-
-                UpdateGridView();
-
-                txtHouseStatus.AppendLine("Houses loaded!");
-            }
-            catch (Exception x)
-            {
-                MessageBox.Show(x.Message.ToString());
-            }
+            LoadHouses();
         }
         private void btnDebugGetID_Click(object sender, EventArgs e)
         {
-            Item _result = Target.RequestTarget();
-            MessageBox.Show(_result.ID.ToString() + " " + _result.Type.ToString());
+            var _targetHelper = TargetHelper.GetTarget();
+            Item _result = _targetHelper.GetTargetItem();
 
-            List<ClilocItemRec> _properties = Stealth.Default.GetClilocRec(_result.ID);
+            List<ClilocItemRec> _properties = Stealth.Client.GetClilocRec(_result.Serial.Value);
 
             txtDebugStatus.AppendLine(_properties.Count.ToString());
 
@@ -421,9 +382,10 @@ namespace FAIL
             try
             {
                 MessageBox.Show("Select runebook...");
-                Item _itemRunebook = Target.RequestTarget();
+                var _targetHelper = TargetHelper.GetTarget();
+                Item _itemRunebook = _targetHelper.GetTargetItem();
 
-                Settings.HomeRunebookID = _itemRunebook.ID;
+                Settings.HomeRunebookID = _itemRunebook.Serial.Value;
 
             }
             catch (Exception x)
@@ -455,20 +417,7 @@ namespace FAIL
         }
         private void btnLoadSettings_Click(object sender, EventArgs e)
         {
-            try
-            {
-                XmlSerializer _deserializer = new XmlSerializer(typeof(Settings));
-                TextReader _reader = new StreamReader(SettingsFilePath);
-                object obj = _deserializer.Deserialize(_reader);
-                Settings = (Settings)obj;
-                _reader.Close();
-
-                txtHouseStatus.AppendLine("General settings loaded!");
-            }
-            catch (Exception x)
-            {
-                MessageBox.Show(x.Message.ToString());
-            }
+            LoadSettings();
         }
         private void btnRefreshDataGrid_Click(object sender, EventArgs e)
         {
@@ -505,27 +454,23 @@ namespace FAIL
                         {
                             CurrentRail = _rail;
 
-                            Item _runebook = new Item(_rail.RunebookID);
+                            Item _runebook = new Item(new Serial(_rail.RunebookID));
+                            
+                            _runebook.Use();
 
-                            GumpClass _runebookGump = OpenRunebook(_runebook);
-
-                            if (_runebookGump == null)
-                            {
-                                workerSearch.ReportProgress(0, "Couldn't find runebook!");
-                                Searching = false;
-                                workerSearch.CancelAsync();
-                            }
-
-                            Thread.Sleep(1000);
-
+                            GumpHelper.WaitForGump(_runebook.Serial.Value, 1200);
+                            
                             int _button = 49 + _rail.RuneNumber;
 
                             workerSearch.ReportProgress(0, "Recalling to start spot...");
 
-                            _runebookGump.ClickButton(_button);
+                            GumpHelper.SendClick(_runebook.Serial, _button);
 
                             Thread.Sleep(5000);
 
+                            if (StealthSearch)
+                                Stealth.Client.UseSkill("Hiding");
+                            
                             int _pathLocations = _rail.Path.Count();
                             string _textToReport = _pathLocations.ToString() + " locations found!";
 
@@ -548,38 +493,34 @@ namespace FAIL
                                     break;
 
 
-                                while (Self.X != _location.X || Self.Y != _location.Y)
+                                while (Self.Location.X != _location.X || Self.Location.Y != _location.Y)
                                 {
                                     if (workerSearch.CancellationPending)
                                         break;
 
-                                    Stealth.Default.MoveXY((ushort)_location.X, (ushort)_location.Y, false, 0, true);
+                                    Stealth.Client.MoveXY((ushort)_location.X, (ushort)_location.Y, false, 0,
+                                        StealthSearch ? false : true);
                                 }
                             }
                         }
                     }
                     
-                    Item _homeRunebook = new Item(Settings.HomeRunebookID);
+                    Item _homeRunebook = new Item(new Serial(Settings.HomeRunebookID));
 
-                    GumpClass _homeRunebookGump = OpenRunebook(_homeRunebook);
+                    _homeRunebook.Use();
 
-                    if (_homeRunebookGump == null)
-                    {
-                        workerSearch.ReportProgress(0, "Couldn't find runebook!");
-                        Searching = false;
-                        workerSearch.CancelAsync();
-                    }
-
-                    Thread.Sleep(1000);
+                    GumpHelper.WaitForGump(_homeRunebook.Serial.Value, 1200);
 
                     int _homeButton = 49 + Settings.HomeRuneNumber;
 
                     workerSearch.ReportProgress(0, "Recalling to start spot...");
 
-                    _homeRunebookGump.ClickButton(_homeButton);
+                    GumpHelper.SendClick(_homeRunebook.Serial, _homeButton);
 
                     Thread.Sleep(5000);
-                    
+
+                    if (StealthSearch)
+                        Stealth.Client.UseSkill("Hiding");
 
                     workerSearch.ReportProgress(0, "Search finished.");
                     Searching = false;
@@ -623,7 +564,7 @@ namespace FAIL
                             if (!Houses.Any(x => x.ID == _item.Serial.Value))
                             {
                                 workerCheckHouses.ReportProgress(0, "New house added!");
-                                House _house = new House(_item.Serial.Value, _item.Tooltip, CurrentRail.Name);
+                                House _house = new House(_item.Serial.Value, _item.Tooltip, CurrentRail.Name, Self.Location.X, Self.Location.Y);
                                 Houses.Add(_house);
                             }
                             else
@@ -693,8 +634,8 @@ namespace FAIL
                     workerBuildRail.ReportProgress(0, "Updating path (" + _n + ")");
 
                     int _x, _y;
-                    _x = Self.X;
-                    _y = Self.Y;
+                    _x = Self.Location.X;
+                    _y = Self.Location.Y;
                     
                     Location _location = new Location(_x, _y);
 
@@ -706,6 +647,11 @@ namespace FAIL
             {
                 MessageBox.Show(x.Message.ToString());
             }
+        }
+
+        private void rdoSelectedRail_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
         #endregion
 
@@ -720,22 +666,6 @@ namespace FAIL
             StreamWriter _outStream = File.CreateText(Filename);
             _doc.Save(_outStream);
             _outStream.Close();
-        }
-        private GumpClass OpenRunebook(Item Runebook)
-        {
-            uint _nextGumpCount = GumpClass.GumpCount + 1, _attempts = 0;
-
-            while (GumpClass.GumpCount <= _nextGumpCount && ++_attempts < 5)
-            {
-                if (GumpClass.GumpCount > 0)
-                    if (GumpClass.LastGump().ID == Runebook.ID)
-                        return GumpClass.LastGump();
-
-                Runebook.Use();
-                Script.Wait(750);
-            }
-
-            return null; // return default(GumpClass);
         }
         private void UpdateGridView()
         {
@@ -776,33 +706,89 @@ namespace FAIL
                 MessageBox.Show(x.Message.ToString());
             }
         }
+        private void LoadHouses()
+        {
+            try
+            {
+                XmlSerializer _deserializer = new XmlSerializer(typeof(List<House>));
+                TextReader _reader = new StreamReader(HouseFilePath);
+                object obj = _deserializer.Deserialize(_reader);
+                Houses = (List<House>)obj;
+                _reader.Close();
+
+                List<string> _houseNames = new List<string>();
+
+                foreach (House _house in Houses)
+                {
+                    _houseNames.Add(_house.Tooltip);
+                }
+
+                UpdateGridView();
+
+                txtStatus.AppendLine("Houses loaded!");
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message.ToString());
+            }
+            
+        }
+        private void LoadSettings()
+        {
+
+            try
+            {
+                XmlSerializer _deserializer = new XmlSerializer(typeof(Settings));
+                TextReader _reader = new StreamReader(SettingsFilePath);
+                object obj = _deserializer.Deserialize(_reader);
+                Settings = (Settings)obj;
+                _reader.Close();
+
+                txtStatus.AppendLine("Settings loaded!");
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message.ToString());
+            }
+        }
+        private void LoadRails()
+        {
+            try
+            {
+                XmlSerializer _deserializer = new XmlSerializer(typeof(List<Rail>));
+                TextReader _reader = new StreamReader(RailFilePath);
+                object obj = _deserializer.Deserialize(_reader);
+                Rails = (List<Rail>)obj;
+                _reader.Close();
+
+                List<string> _railNames = new List<string>();
+
+                foreach (Rail _r in Rails)
+                {
+                    _railNames.Add(_r.Name);
+                    Runebooks.Add(_r.RunebookID);
+                }
+
+                Runebooks = Runebooks.Distinct().ToList();
+
+                listRunebooks.DataSource = null;
+                listRunebooks.DataSource = Runebooks;
+
+                listRails.DataSource = null;
+                listRails.DataSource = _railNames;
+
+                txtStatus.AppendLine("Rails loaded!");
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message.ToString());
+            }
+        }
         #endregion
 
     }
 
     #region Objects
-    /*
-    public class Rails : List<Rail>
-    {
-        private Rail _rail;
-        public Rail Rail
-        {
-            get { return _rail; }
-            set { _rail = value; }
-        }
-        public Rails()
-        {
-
-        }
-        public Rails(IEnumerable<Rail> list)
-            : base(list)
-        {
-        }
-        public Rails(Rail Rail)
-        {
-            this.Rail = Rail;
-        }
-    }*/
     public class Rail
     {
         private string _name;
@@ -952,11 +938,11 @@ namespace FAIL
         {
 
         }
-        public House(uint ID, string Tooltip, string Rail)
+        public House(uint ID, string Tooltip, string Rail, int X, int Y)
         {
             this.ID = ID;                
             this.Tooltip = Tooltip;
-            this.Location = new Location(Self.X, Self.Y);
+            this.Location = new Location(X, Y);
             this.Rail = Rail;
 
             string[] _text = Tooltip.Split('|');

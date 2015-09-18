@@ -68,6 +68,7 @@
             this.txtDebugStatus = new System.Windows.Forms.TextBox();
             this.btnDebugGetID = new System.Windows.Forms.Button();
             this.tabSettings = new System.Windows.Forms.TabPage();
+            this.cboxStealthSearch = new System.Windows.Forms.CheckBox();
             this.btnLoadSettings = new System.Windows.Forms.Button();
             this.btnSaveSettings = new System.Windows.Forms.Button();
             this.lblSafeRuneNumber = new System.Windows.Forms.Label();
@@ -120,7 +121,7 @@
             // 
             // btnStopSearch
             // 
-            this.btnStopSearch.Location = new System.Drawing.Point(655, 562);
+            this.btnStopSearch.Location = new System.Drawing.Point(672, 567);
             this.btnStopSearch.Name = "btnStopSearch";
             this.btnStopSearch.Size = new System.Drawing.Size(134, 48);
             this.btnStopSearch.TabIndex = 12;
@@ -130,7 +131,7 @@
             // 
             // btnStartSearch
             // 
-            this.btnStartSearch.Location = new System.Drawing.Point(504, 562);
+            this.btnStartSearch.Location = new System.Drawing.Point(521, 567);
             this.btnStartSearch.Name = "btnStartSearch";
             this.btnStartSearch.Size = new System.Drawing.Size(134, 48);
             this.btnStartSearch.TabIndex = 12;
@@ -502,6 +503,7 @@
             // 
             // tabSettings
             // 
+            this.tabSettings.Controls.Add(this.cboxStealthSearch);
             this.tabSettings.Controls.Add(this.btnLoadSettings);
             this.tabSettings.Controls.Add(this.btnSaveSettings);
             this.tabSettings.Controls.Add(this.lblSafeRuneNumber);
@@ -514,11 +516,21 @@
             this.tabSettings.Text = "Settings";
             this.tabSettings.UseVisualStyleBackColor = true;
             // 
+            // cboxStealthSearch
+            // 
+            this.cboxStealthSearch.AutoSize = true;
+            this.cboxStealthSearch.Location = new System.Drawing.Point(514, 60);
+            this.cboxStealthSearch.Name = "cboxStealthSearch";
+            this.cboxStealthSearch.Size = new System.Drawing.Size(191, 24);
+            this.cboxStealthSearch.TabIndex = 5;
+            this.cboxStealthSearch.Text = "Stealth while searching";
+            this.cboxStealthSearch.UseVisualStyleBackColor = true;
+            // 
             // btnLoadSettings
             // 
-            this.btnLoadSettings.Location = new System.Drawing.Point(279, 479);
+            this.btnLoadSettings.Location = new System.Drawing.Point(753, 593);
             this.btnLoadSettings.Name = "btnLoadSettings";
-            this.btnLoadSettings.Size = new System.Drawing.Size(123, 63);
+            this.btnLoadSettings.Size = new System.Drawing.Size(123, 40);
             this.btnLoadSettings.TabIndex = 4;
             this.btnLoadSettings.Text = "Load Settings";
             this.btnLoadSettings.UseVisualStyleBackColor = true;
@@ -526,9 +538,9 @@
             // 
             // btnSaveSettings
             // 
-            this.btnSaveSettings.Location = new System.Drawing.Point(102, 536);
+            this.btnSaveSettings.Location = new System.Drawing.Point(624, 593);
             this.btnSaveSettings.Name = "btnSaveSettings";
-            this.btnSaveSettings.Size = new System.Drawing.Size(108, 53);
+            this.btnSaveSettings.Size = new System.Drawing.Size(123, 40);
             this.btnSaveSettings.TabIndex = 3;
             this.btnSaveSettings.Text = "Save Settings";
             this.btnSaveSettings.UseVisualStyleBackColor = true;
@@ -662,6 +674,7 @@
         private System.Windows.Forms.Button btnRefreshDataGrid;
         private System.Windows.Forms.Button btnContinueBuildRail;
         private System.Windows.Forms.Button btnPauseBuildRail;
+        private System.Windows.Forms.CheckBox cboxStealthSearch;
     }
 }
 
