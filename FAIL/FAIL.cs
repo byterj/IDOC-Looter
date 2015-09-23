@@ -12,13 +12,10 @@ using System.Xml;
 using System.Xml.Serialization;
 using ScriptSDK;
 using ScriptSDK.API;
-using ScriptSDK.Attributes;
 using ScriptSDK.Engines;
 using ScriptSDK.Gumps;
 using ScriptSDK.Items;
 using ScriptSDK.Mobiles;
-
-
 
 namespace FAIL
 {
@@ -27,17 +24,20 @@ namespace FAIL
 
         #region Vars
         private PlayerMobile Self = PlayerMobile.GetPlayer();
-        private bool BuildingRail, BuildingRailPause, Searching, StealthSearch, FAILFormClosing;
+        private bool BuildingRail, BuildingRailPause, Searching, StealthSearch;
         private string RailFilePath, HouseFilePath, SettingsFilePath;
         private Rail SelectedRail, CurrentRail;
         private List<Rail> SelectedRails = new List<Rail>();
         private List<uint> Runebooks = new List<uint>();
         private Object thisLock = new Object();
         private DataSet DataSetHouses = new DataSet();
+
         [XmlArray]
         private List<Rail> Rails = new List<Rail>();
+
         [XmlArray]
         List<House> Houses = new List<House>();
+
         private Settings Settings = new Settings();
         #endregion
 
@@ -90,11 +90,9 @@ namespace FAIL
             if (BuildingRail)
             {
                 workerBuildRail.CancelAsync();
-                this.Enabled = false;
-                FAILFormClosing = true;
+                Enabled = false;
                 e.Cancel = true;
             }
-            
         }
         private void FAIL_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -437,6 +435,7 @@ namespace FAIL
         {
             try
             {
+                Stealth.Client.SetMoveThroughNPC(0);
                 while (Searching)
                 {
                     if (workerSearch.CancellationPending)
@@ -489,13 +488,18 @@ namespace FAIL
                                 if (workerSearch.CancellationPending)
                                     break;
 
+                                Stopwatch _clockMove = new Stopwatch();
 
+                                _clockMove.Start();
                                 while (Self.Location.X != _location.X || Self.Location.Y != _location.Y)
                                 {
                                     if (workerSearch.CancellationPending)
                                         break;
 
-                                    Stealth.Client.MoveXY((ushort)_location.X, (ushort)_location.Y, false, 0,
+                                    if (_clockMove.Elapsed.TotalSeconds > 10)
+                                        break;
+
+                                    Stealth.Client.newMoveXY((ushort)_location.X, (ushort)_location.Y, true, 0,
                                         StealthSearch ? false : true);
                                 }
                             }
@@ -790,239 +794,5 @@ namespace FAIL
         }
         #endregion
 
-    }
-
-    #region Objects
-    public class Rail
-    {
-        private string _name;
-        private uint _runebookID;
-        private int _runeNumber;
-        private List<Location> _path;
-
-        public string Name
-        {
-            get { return _name; }
-            set { _name = value; }
-        }
-        public uint RunebookID
-        {
-            get { return _runebookID; }
-            set { _runebookID = value; }
-        }
-        public int RuneNumber
-        {
-            get { return _runeNumber; }
-            set { _runeNumber = value; }
-        }
-
-        public List<Location> Path
-        {
-            get { return _path; }
-            set { _path = value; }
-        }
-        public Rail()
-        {
-            //parameterless constructor for xml serialization
-        }
-        public Rail(string Name, uint RunebookID, int RuneNumber)
-        {
-            this.Name = Name;
-            this.RunebookID = RunebookID;
-            this.RuneNumber = RuneNumber;
-            this.Path = new List<Location>();
-        }
-    }
-    public class Location
-    {
-        private int _x, _y;
-        public int X
-        {
-            get { return _x; }
-            set { _x = value; }
-        }
-        public int Y
-        {
-            get { return _y; }
-            set { _y = value; }
-        }
-        public Location()
-        {
-            //parameterless constructor for xml serialization
-        }
-        public Location(int X, int Y)
-        {
-            this.X = X;
-            this.Y = Y;
-        }
-    }
-    public static class WinFormsExtensions
-    {
-        public static void AppendLine(this TextBox source, string value)
-        {
-            if (source.Text.Length == 0)
-                source.Text = value;
-            else
-                source.AppendText("\r\n" + value);
-        }
-    }
-    public class House
-    {
-        private uint _id;
-        private string _name;
-        private string _owner;
-        private string _condition;
-        private string _tooltip;
-        private Location _location;
-        private string _rail;
-        private DateTime _added;
-        private DateTime _checked;
-
-        public uint ID
-        {
-            get { return _id; }
-            set { _id = value; }
-        }
-        public string Name
-        {
-            get { return _name; }
-            set { _name = value; }
-        }
-        public string Owner
-        {
-            get { return _owner; }
-            set { _owner = value; }
-        }
-        public string Condition
-        {
-            get { return _condition; }
-            set { _condition = value; }
-        }
-        public string Tooltip
-        {
-            get { return _tooltip; }
-            set { _tooltip = value; }
-        }
-        public Location Location
-        {
-            get { return _location; }
-            set { _location = value; }
-        }
-        public string Rail
-        {
-            get { return _rail; }
-            set { _rail = value; }
-        }
-        [XmlIgnore]
-        public DateTime Added
-        {
-            get { return _added; }
-            set { _added = value; }
-        }
-        [XmlElement("Added")]
-        public string DateAdded
-        {
-            get { return this.Added.ToString("yyyy-MM-dd HH:mm:ss"); }
-            set { this.Added = DateTime.Parse(value); }
-        }
-        [XmlIgnore]
-        public DateTime Checked
-        {
-            get { return _checked; }
-            set { _checked = value; }
-        }
-        [XmlElement("Checked")]
-        public string DateChecked
-        {
-            get { return this.Checked.ToString("yyyy-MM-dd HH:mm:ss"); }
-            set { this.Checked = DateTime.Parse(value); }
-        }
-
-        public House()
-        {
-
-        }
-        public House(uint ID, string Tooltip, string Rail, int X, int Y)
-        {
-            this.ID = ID;                
-            this.Tooltip = Tooltip;
-            this.Location = new Location(X, Y);
-            this.Rail = Rail;
-
-            string[] _text = Tooltip.Split('|');
-
-            if (Tooltip.Length > 11)
-                for (int x = 0; x < _text.Count(); x++)
-                {
-                    if (_text[x].Remove(6) == "Name: ")
-                        this.Name = _text[x].Remove(0, 6);
-                    else if (_text[x].Remove(7) == "Owner: ")
-                        this.Owner = _text[x].Remove(0, 7);
-                    if (_text[x].Length > 11)
-                        if (_text[x].Remove(11) == "Condition: ")
-                            this.Condition = _text[x].Remove(0, 11);
-                        else
-                            this.Condition = "Refreshed";
-                }
-            else
-            {
-                this.Name = "Unknown";
-                this.Owner = "Unknown";
-                this.Condition = "Unknown";
-            }
-
-            this.Added = DateTime.Now;
-            this.Checked = DateTime.Now;
-        }
-        public void BuildSet()
-        {
-
-        }
-    }
-
-    [QuerySearch(new ushort[] {
-       0x0B96, 0x0BA4, 0x0BA6, 0x0BA8, 0x0BAA,
-        0x0BAC, 0x0BAE, 0x0BB0, 0x0BB2, 0x0BB4,
-        0x0BB6, 0x0BB8, 0x0BBA, 0x0BBC, 0x0BBE,
-        0x0BC0, 0x0BC2, 0x0BC4, 0x0BC6, 0x0BC8,
-        0x0BCA, 0x0BCC, 0x0BCE, 0x0BD0, 0x0BD2,
-        0x0BD4, 0x0BD6, 0x0BD8, 0x0BDA, 0x0BDC,
-        0x0BDE, 0x0BE0, 0x0BE2, 0x0BE4, 0x0BE6,
-        0x0BE8, 0x0BEA, 0x0BEC, 0x0BEE, 0x0BF0,
-        0x0BF2, 0x0BF4, 0x0BF6, 0x0BF8, 0x0BFA,
-        0x0BFC, 0x0BFE, 0x0C00, 0x0C02, 0x0C04,
-        0x0C06, 0x0C08, 0x0C0A, 0x0C0C, 0x0C0E,
-        0x0C44 })]
-    public class HouseSigns : ScriptSDK.Items.Item
-    {
-        public HouseSigns(Serial serial)
-            : base(serial)
-        {
-
-        }
-    }
-    public class Settings
-    {
-        private uint _homeRunebookID;
-        private int _homeRuneNumber;
-
-        public uint HomeRunebookID
-        {
-            get { return _homeRunebookID; }
-            set { _homeRunebookID = value; }
-        }
-        public int HomeRuneNumber
-        {
-            get { return _homeRuneNumber; }
-            set { _homeRuneNumber = value; }
-        }
-
-        public Settings()
-        {
-
-        }
-
-    }
-    #endregion
-
+    }   
 }
