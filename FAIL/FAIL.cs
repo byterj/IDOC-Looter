@@ -24,7 +24,7 @@ namespace FAIL
         #region Vars
 
         private PlayerMobile Self = PlayerMobile.GetPlayer();
-        private bool BuildingRail, BuildingRailPause, Searching, StealthSearch;
+        private bool BuildingRail, BuildingRailPause, Searching, StealthSearch, Watching, PauseSearch = false;
         private string RailFilePath, HouseFilePath, SettingsFilePath;
         private Rail SelectedRail, CurrentRail;
         private List<Rail> SelectedRails = new List<Rail>();
@@ -462,25 +462,16 @@ namespace FAIL
                             CurrentRail = _rail;
 
                             Item _runebook = new Item(new Serial(_rail.RunebookID));
-
                             _runebook.Use();
-
                             GumpHelper.WaitForGump(_runebook.Serial.Value, 1200);
-
                             int _button = 49 + _rail.RuneNumber;
-
                             workerSearch.ReportProgress(0, "Recalling to start spot...");
-
                             GumpHelper.SendClick(_runebook.Serial, _button);
-
                             Thread.Sleep(5000);
-
                             if (StealthSearch)
                                 Stealth.Client.UseSkill("Hiding");
-
                             int _pathLocations = _rail.Path.Count();
                             string _textToReport = _pathLocations.ToString() + " locations found!";
-
                             workerSearch.ReportProgress(0, _textToReport);
                             workerSearch.ReportProgress(0, "Starting search...");
                         }
@@ -488,6 +479,12 @@ namespace FAIL
                         int _n = 0;
                         foreach (Location _location in _rail.Path)
                         {
+                            if (PauseSearch)
+                            {
+
+                            }
+
+
                             if (workerSearch.CancellationPending)
                                 break;
 
@@ -670,6 +667,88 @@ namespace FAIL
 
         private void rdoSelectedRail_CheckedChanged(object sender, EventArgs e)
         {
+        }
+
+        private void btnPauseSearch_Click(object sender, EventArgs e)
+        {
+            PauseSearch = !PauseSearch;
+        }
+
+        private void btnStartWatching_Click(object sender, EventArgs e)
+        {
+            Watching = true;
+            workerWatch.RunWorkerAsync();
+        }
+
+        private void workerWatch_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            txtWatchStatus.Text = e.UserState.ToString();
+        }
+
+        private void workerWatch_DoWork(object sender, DoWorkEventArgs e)
+        {
+            try
+            {
+                Scanner.Range = 20;
+                Scanner.VerticalRange = 20;
+                var _results = Scanner.Find<HouseSigns>(0x0, false);
+                List<HouseSigns> _resultsList = _results.Select(x => x.Cast<HouseSigns>()).ToList();
+
+                DateTime _start = DateTime.Now;
+
+                if (_resultsList.Count == 0)
+                {
+                    workerWatch.CancelAsync();
+                    Watching = false;
+                }
+
+                string[] _text = new string[] { "" };
+                string _condition = "";
+                string _oldCondition = "";
+
+                _text = _resultsList.First().Tooltip.Split('|');
+
+                if (_resultsList.First().Tooltip.Length > 11)
+                    for (int x = 0; x < _text.Count(); x++)
+                    {
+                        if (_text[x].Length > 11)
+                            if (_text[x].Remove(11) == "Condition: ")
+                                _oldCondition = _text[x].Remove(0, 11);
+                            else
+                                _oldCondition = "Refreshed";
+                    }
+
+                workerWatch.ReportProgress(0, DateTime.Now.ToString() + ' ' + _oldCondition);
+
+                while (Watching)
+                {
+                    DateTime _time = DateTime.Now;
+
+                    _text = _resultsList.First().Tooltip.Split('|');
+
+                    if (_resultsList.First().Tooltip.Length > 11)
+                        for (int x = 0; x < _text.Count(); x++)
+                        {
+                            if (_text[x].Length > 11)
+                                if (_text[x].Remove(11) == "Condition: ")
+                                    _condition = _text[x].Remove(0, 11);
+                                else
+                                    _condition = "Refreshed";
+                        }
+
+                    if (_condition != _oldCondition)
+                    {
+                        workerWatch.ReportProgress(0, DateTime.Now.ToString() + ' ' + _condition);
+                        _oldCondition = _condition;
+                    }
+
+                    Stealth.Client.Wait(5000);
+                }
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(x.Message.ToString());
+            }
         }
 
         #endregion Worker Functions

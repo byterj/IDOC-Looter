@@ -30,6 +30,7 @@
         {
             this.tabFailTabs = new System.Windows.Forms.TabControl();
             this.tabSearch = new System.Windows.Forms.TabPage();
+            this.btnPauseSearch = new System.Windows.Forms.Button();
             this.btnStopSearch = new System.Windows.Forms.Button();
             this.btnStartSearch = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -77,10 +78,15 @@
             this.workerBuildRail = new System.ComponentModel.BackgroundWorker();
             this.workerSearch = new System.ComponentModel.BackgroundWorker();
             this.workerCheckHouses = new System.ComponentModel.BackgroundWorker();
+            this.txtWatchStatus = new System.Windows.Forms.TextBox();
+            this.btnStartWatching = new System.Windows.Forms.Button();
+            this.btnStopWatching = new System.Windows.Forms.Button();
+            this.workerWatch = new System.ComponentModel.BackgroundWorker();
             this.tabFailTabs.SuspendLayout();
             this.tabSearch.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.tabWatch.SuspendLayout();
             this.tabHouses.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.tabDebug.SuspendLayout();
@@ -107,6 +113,7 @@
             // 
             // tabSearch
             // 
+            this.tabSearch.Controls.Add(this.btnPauseSearch);
             this.tabSearch.Controls.Add(this.btnStopSearch);
             this.tabSearch.Controls.Add(this.btnStartSearch);
             this.tabSearch.Controls.Add(this.groupBox2);
@@ -119,11 +126,21 @@
             this.tabSearch.Text = "Search";
             this.tabSearch.UseVisualStyleBackColor = true;
             // 
+            // btnPauseSearch
+            // 
+            this.btnPauseSearch.Location = new System.Drawing.Point(520, 567);
+            this.btnPauseSearch.Name = "btnPauseSearch";
+            this.btnPauseSearch.Size = new System.Drawing.Size(240, 48);
+            this.btnPauseSearch.TabIndex = 1;
+            this.btnPauseSearch.Text = "Pause/Continue";
+            this.btnPauseSearch.UseVisualStyleBackColor = true;
+            this.btnPauseSearch.Click += new System.EventHandler(this.btnPauseSearch_Click);
+            // 
             // btnStopSearch
             // 
-            this.btnStopSearch.Location = new System.Drawing.Point(672, 567);
+            this.btnStopSearch.Location = new System.Drawing.Point(766, 567);
             this.btnStopSearch.Name = "btnStopSearch";
-            this.btnStopSearch.Size = new System.Drawing.Size(134, 48);
+            this.btnStopSearch.Size = new System.Drawing.Size(106, 48);
             this.btnStopSearch.TabIndex = 12;
             this.btnStopSearch.Text = "Stop";
             this.btnStopSearch.UseVisualStyleBackColor = true;
@@ -131,9 +148,9 @@
             // 
             // btnStartSearch
             // 
-            this.btnStartSearch.Location = new System.Drawing.Point(521, 567);
+            this.btnStartSearch.Location = new System.Drawing.Point(408, 567);
             this.btnStartSearch.Name = "btnStartSearch";
-            this.btnStartSearch.Size = new System.Drawing.Size(134, 48);
+            this.btnStartSearch.Size = new System.Drawing.Size(106, 48);
             this.btnStartSearch.TabIndex = 12;
             this.btnStartSearch.Text = "Start";
             this.btnStartSearch.UseVisualStyleBackColor = true;
@@ -408,6 +425,9 @@
             // 
             // tabWatch
             // 
+            this.tabWatch.Controls.Add(this.btnStopWatching);
+            this.tabWatch.Controls.Add(this.btnStartWatching);
+            this.tabWatch.Controls.Add(this.txtWatchStatus);
             this.tabWatch.Location = new System.Drawing.Point(4, 29);
             this.tabWatch.Name = "tabWatch";
             this.tabWatch.Padding = new System.Windows.Forms.Padding(3);
@@ -596,6 +616,40 @@
             this.workerCheckHouses.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.workerCheckHouses_ProgressChanged);
             this.workerCheckHouses.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.workerCheckHouses_RunWorkerCompleted);
             // 
+            // txtWatchStatus
+            // 
+            this.txtWatchStatus.Location = new System.Drawing.Point(8, 366);
+            this.txtWatchStatus.Multiline = true;
+            this.txtWatchStatus.Name = "txtWatchStatus";
+            this.txtWatchStatus.Size = new System.Drawing.Size(865, 224);
+            this.txtWatchStatus.TabIndex = 0;
+            // 
+            // btnStartWatching
+            // 
+            this.btnStartWatching.Location = new System.Drawing.Point(261, 596);
+            this.btnStartWatching.Name = "btnStartWatching";
+            this.btnStartWatching.Size = new System.Drawing.Size(149, 34);
+            this.btnStartWatching.TabIndex = 1;
+            this.btnStartWatching.Text = "Start Watching";
+            this.btnStartWatching.UseVisualStyleBackColor = true;
+            this.btnStartWatching.Click += new System.EventHandler(this.btnStartWatching_Click);
+            // 
+            // btnStopWatching
+            // 
+            this.btnStopWatching.Location = new System.Drawing.Point(416, 596);
+            this.btnStopWatching.Name = "btnStopWatching";
+            this.btnStopWatching.Size = new System.Drawing.Size(149, 34);
+            this.btnStopWatching.TabIndex = 1;
+            this.btnStopWatching.Text = "Stop Watching";
+            this.btnStopWatching.UseVisualStyleBackColor = true;
+            // 
+            // workerWatch
+            // 
+            this.workerWatch.WorkerReportsProgress = true;
+            this.workerWatch.WorkerSupportsCancellation = true;
+            this.workerWatch.DoWork += new System.ComponentModel.DoWorkEventHandler(this.workerWatch_DoWork);
+            this.workerWatch.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.workerWatch_ProgressChanged);
+            // 
             // FAIL
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -613,6 +667,8 @@
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.tabWatch.ResumeLayout(false);
+            this.tabWatch.PerformLayout();
             this.tabHouses.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.tabDebug.ResumeLayout(false);
@@ -675,6 +731,11 @@
         private System.Windows.Forms.Button btnContinueBuildRail;
         private System.Windows.Forms.Button btnPauseBuildRail;
         private System.Windows.Forms.CheckBox cboxStealthSearch;
+        private System.Windows.Forms.Button btnPauseSearch;
+        private System.Windows.Forms.Button btnStopWatching;
+        private System.Windows.Forms.Button btnStartWatching;
+        private System.Windows.Forms.TextBox txtWatchStatus;
+        private System.ComponentModel.BackgroundWorker workerWatch;
     }
 }
 
