@@ -5,8 +5,10 @@ using System.Xml.Serialization;
 
 namespace FAIL
 {
-    class House
+    public class House
     {
+        #region Vars
+
         private uint _id;
         private string _name;
         private string _owner;
@@ -17,59 +19,73 @@ namespace FAIL
         private DateTime _added;
         private DateTime _checked;
 
+        #endregion Vars
+
+        #region Properties
+
         public uint ID
         {
             get { return _id; }
             set { _id = value; }
         }
+
         public string Name
         {
             get { return _name; }
             set { _name = value; }
         }
+
         public string Owner
         {
             get { return _owner; }
             set { _owner = value; }
         }
+
         public string Condition
         {
             get { return _condition; }
             set { _condition = value; }
         }
+
         public string Tooltip
         {
             get { return _tooltip; }
             set { _tooltip = value; }
         }
+
         public Location Location
         {
             get { return _location; }
             set { _location = value; }
         }
+
         public string Rail
         {
             get { return _rail; }
             set { _rail = value; }
         }
+
         [XmlIgnore]
         public DateTime Added
         {
             get { return _added; }
             set { _added = value; }
         }
+
         [XmlElement("Added")]
         public string DateAdded
         {
             get { return this.Added.ToString("yyyy-MM-dd HH:mm:ss"); }
             set { this.Added = DateTime.Parse(value); }
         }
+
         [XmlIgnore]
         public DateTime Checked
         {
             get { return _checked; }
             set { _checked = value; }
         }
+
         [XmlElement("Checked")]
         public string DateChecked
         {
@@ -77,10 +93,14 @@ namespace FAIL
             set { this.Checked = DateTime.Parse(value); }
         }
 
+        #endregion Properties
+
+        #region Constructs
+
         public House()
         {
-
         }
+
         public House(uint ID, string Tooltip, string Rail, int X, int Y)
         {
             this.ID = ID;
@@ -113,9 +133,7 @@ namespace FAIL
             this.Added = DateTime.Now;
             this.Checked = DateTime.Now;
         }
-        public void BuildSet()
-        {
 
-        }
+        #endregion Constructs
     }
 }

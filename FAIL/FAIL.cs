@@ -1,4 +1,10 @@
-﻿using System;
+﻿using ScriptSDK;
+using ScriptSDK.API;
+using ScriptSDK.Engines;
+using ScriptSDK.Gumps;
+using ScriptSDK.Items;
+using ScriptSDK.Mobiles;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,19 +16,13 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
-using ScriptSDK;
-using ScriptSDK.API;
-using ScriptSDK.Engines;
-using ScriptSDK.Gumps;
-using ScriptSDK.Items;
-using ScriptSDK.Mobiles;
 
 namespace FAIL
 {
     public partial class FAIL : Form
     {
-
         #region Vars
+
         private PlayerMobile Self = PlayerMobile.GetPlayer();
         private bool BuildingRail, BuildingRailPause, Searching, StealthSearch;
         private string RailFilePath, HouseFilePath, SettingsFilePath;
@@ -36,12 +36,14 @@ namespace FAIL
         private List<Rail> Rails = new List<Rail>();
 
         [XmlArray]
-        List<House> Houses = new List<House>();
+        private List<House> Houses = new List<House>();
 
         private Settings Settings = new Settings();
-        #endregion
+
+        #endregion Vars
 
         #region Form Functions
+
         public FAIL()
         {
             InitializeComponent();
@@ -55,12 +57,12 @@ namespace FAIL
 
             string _myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             string _scriptPath = _myDocuments + "\\Stealth\\FAIL";
-                        
+
             RailFilePath = _scriptPath + "\\rails.xml";
             HouseFilePath = _scriptPath + "\\houses.xml";
             SettingsFilePath = _scriptPath + "\\settings.xml";
-
         }
+
         private void FAIL_Load(object sender, EventArgs e)
         {
             try
@@ -77,14 +79,13 @@ namespace FAIL
                     LoadHouses();
                 if (File.Exists(SettingsFilePath))
                     LoadSettings();
-                
             }
             catch (Exception x)
             {
                 MessageBox.Show(x.Message.ToString());
             }
-
         }
+
         private void FAIL_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (BuildingRail)
@@ -94,9 +95,11 @@ namespace FAIL
                 e.Cancel = true;
             }
         }
+
         private void FAIL_FormClosed(object sender, FormClosedEventArgs e)
         {
         }
+
         private void btnAddRunebook_Click(object sender, EventArgs e)
         {
             try
@@ -114,6 +117,7 @@ namespace FAIL
                 MessageBox.Show(x.Message.ToString());
             }
         }
+
         private void btnRemoveRunebook_Click(object sender, EventArgs e)
         {
             try
@@ -140,6 +144,7 @@ namespace FAIL
                 MessageBox.Show(x.Message.ToString());
             }
         }
+
         private void btnAddRail_Click(object sender, EventArgs e)
         {
             try
@@ -171,9 +176,9 @@ namespace FAIL
                 MessageBox.Show(x.StackTrace.ToString());
             }
         }
+
         private void btnRemoveRail_Click(object sender, EventArgs e)
         {
-
             if (listRails.SelectedIndex == -1)
                 MessageBox.Show("Select rails to remove.");
             else
@@ -187,7 +192,7 @@ namespace FAIL
                         if (listRails.GetSelected(x) == true)
                             Rails.Remove(Rails[x]);
                     }
-                    
+
                     List<string> _railNames = new List<string>();
 
                     foreach (Rail _r in Rails)
@@ -203,11 +208,10 @@ namespace FAIL
                     MessageBox.Show(x.Message.ToString());
                 }
             }
-
         }
+
         private void btnStartRail_Click(object sender, EventArgs e)
         {
-
             if (listRails.SelectedIndex == -1)
                 MessageBox.Show("Select a rail to start building.");
             else
@@ -224,14 +228,14 @@ namespace FAIL
                     MessageBox.Show(x.Message.ToString());
                 }
             }
-
-                
         }
+
         private void btnStopRail_Click(object sender, EventArgs e)
         {
             BuildingRail = false;
             workerBuildRail.CancelAsync();
         }
+
         private void btnSaveRails_Click(object sender, EventArgs e)
         {
             try
@@ -252,14 +256,16 @@ namespace FAIL
                 MessageBox.Show(x.Message.ToString());
             }
         }
+
         private void btnLoadRails_Click(object sender, EventArgs e)
         {
             LoadRails();
         }
+
         private void btnResetRails_Click(object sender, EventArgs e)
         {
-
         }
+
         private void btnStartSearch_Click(object sender, EventArgs e)
         {
             if (listRails.SelectedIndex == -1)
@@ -286,20 +292,24 @@ namespace FAIL
                 }
             }
         }
+
         private void btnStopSearch_Click(object sender, EventArgs e)
         {
             Searching = false;
             workerSearch.CancelAsync();
             workerCheckHouses.CancelAsync();
         }
+
         private void btnSaveHouses_Click(object sender, EventArgs e)
         {
             SaveHouses();
         }
+
         private void btnLoadHouses_Click(object sender, EventArgs e)
         {
             LoadHouses();
         }
+
         private void btnDebugGetID_Click(object sender, EventArgs e)
         {
             Item _result = GetTargetItem();
@@ -318,35 +328,33 @@ namespace FAIL
             }
 
             txtDebugStatus.AppendLine(_result.Tooltip);
-
-
         }
+
         private void btnDebugSearchItems_Click(object sender, EventArgs e)
         {
             try
             {
-            ScriptLogger.Initialize();
-            ScriptLogger.LogToStealth = true;
-            Scanner.Range = 20;
-            Scanner.VerticalRange = 20;
+                ScriptLogger.Initialize();
+                ScriptLogger.LogToStealth = true;
+                Scanner.Range = 20;
+                Scanner.VerticalRange = 20;
 
-            var Player = PlayerMobile.GetPlayer();
-            var results = Scanner.Find<HouseSigns>(0x0, false);
-            List<HouseSigns> list = results.Select(x => x.Cast<HouseSigns>()).ToList();
+                var Player = PlayerMobile.GetPlayer();
+                var results = Scanner.Find<HouseSigns>(0x0, false);
+                List<HouseSigns> list = results.Select(x => x.Cast<HouseSigns>()).ToList();
 
-            string _textToSend = "";
+                string _textToSend = "";
 
-
-            txtDebugStatus.AppendLine(list.Count.ToString());
-            foreach (ScriptSDK.Items.Item _item in list)
-            {
-                string[] _text = _item.Tooltip.Split('|');
-                txtDebugStatus.AppendLine("DEBUG");
-                foreach (String _char in _text)
+                txtDebugStatus.AppendLine(list.Count.ToString());
+                foreach (ScriptSDK.Items.Item _item in list)
                 {
+                    string[] _text = _item.Tooltip.Split('|');
+                    txtDebugStatus.AppendLine("DEBUG");
+                    foreach (String _char in _text)
+                    {
                         txtDebugStatus.AppendLine(_char);
-                }
-                txtDebugStatus.AppendLine("DEBUG");
+                    }
+                    txtDebugStatus.AppendLine("DEBUG");
 
                     for (int x = 0; x < _text.Count(); x++)
                     {
@@ -361,18 +369,16 @@ namespace FAIL
                                 _textToSend = "Refreshed";
                     }
 
-
-                txtDebugStatus.AppendLine(_textToSend);
-                txtDebugStatus.AppendLine(_item.Tooltip);
+                    txtDebugStatus.AppendLine(_textToSend);
+                    txtDebugStatus.AppendLine(_item.Tooltip);
                 }
-
             }
             catch (Exception x)
             {
                 MessageBox.Show(x.Message.ToString());
             }
-
         }
+
         private void btnSetSafeRunebook_Click(object sender, EventArgs e)
         {
             try
@@ -381,13 +387,13 @@ namespace FAIL
                 Item _itemRunebook = GetTargetItem();
 
                 Settings.HomeRunebookID = _itemRunebook.Serial.Value;
-
             }
             catch (Exception x)
             {
                 MessageBox.Show(x.Message.ToString());
             }
         }
+
         private void btnSaveSettings_Click(object sender, EventArgs e)
         {
             try
@@ -408,29 +414,34 @@ namespace FAIL
             {
                 MessageBox.Show(x.Message.ToString());
             }
-
         }
+
         private void btnLoadSettings_Click(object sender, EventArgs e)
         {
             LoadSettings();
         }
+
         private void btnRefreshDataGrid_Click(object sender, EventArgs e)
         {
             UpdateGridView();
         }
+
         private void btnPauseBuildRail_Click(object sender, EventArgs e)
         {
             BuildingRailPause = true;
             txtStatus.AppendLine("Paused building rail...");
         }
+
         private void btnContinueBuildRail_Click(object sender, EventArgs e)
         {
             BuildingRailPause = false;
             txtStatus.AppendLine("Resumed building rail...");
         }
-        #endregion
+
+        #endregion Form Functions
 
         #region Worker Functions
+
         private void workerSearch_DoWork(object sender, DoWorkEventArgs e)
         {
             try
@@ -451,11 +462,11 @@ namespace FAIL
                             CurrentRail = _rail;
 
                             Item _runebook = new Item(new Serial(_rail.RunebookID));
-                            
+
                             _runebook.Use();
 
                             GumpHelper.WaitForGump(_runebook.Serial.Value, 1200);
-                            
+
                             int _button = 49 + _rail.RuneNumber;
 
                             workerSearch.ReportProgress(0, "Recalling to start spot...");
@@ -466,7 +477,7 @@ namespace FAIL
 
                             if (StealthSearch)
                                 Stealth.Client.UseSkill("Hiding");
-                            
+
                             int _pathLocations = _rail.Path.Count();
                             string _textToReport = _pathLocations.ToString() + " locations found!";
 
@@ -505,7 +516,7 @@ namespace FAIL
                             }
                         }
                     }
-                    
+
                     Item _homeRunebook = new Item(new Serial(Settings.HomeRunebookID));
 
                     _homeRunebook.Use();
@@ -534,17 +545,19 @@ namespace FAIL
                 MessageBox.Show(x.Message.ToString());
             }
         }
+
         private void workerSearch_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             txtStatus.AppendLine(e.UserState.ToString());
         }
+
         private void workerSearch_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             txtStatus.AppendLine("Stopped searching!");
         }
+
         private void workerCheckHouses_DoWork(object sender, DoWorkEventArgs e)
         {
-
             Scanner.Range = 20;
             Scanner.VerticalRange = 20;
 
@@ -556,7 +569,7 @@ namespace FAIL
                     {
                         if (workerCheckHouses.CancellationPending)
                             break;
-                        
+
                         var _results = Scanner.Find<HouseSigns>(0x0, false);
                         List<HouseSigns> _resultsList = _results.Select(x => x.Cast<HouseSigns>()).ToList();
 
@@ -595,23 +608,28 @@ namespace FAIL
                 MessageBox.Show(x.Message.ToString());
             }
         }
+
         private void workerCheckHouses_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             txtHouseStatus.AppendLine(e.UserState.ToString());
         }
+
         private void workerCheckHouses_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             txtHouseStatus.AppendLine("Check Houses Stopped!");
             SaveHouses();
         }
+
         private void workerBuildRail_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             txtStatus.AppendLine(e.UserState.ToString());
         }
+
         private void workerBuildRail_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             txtStatus.AppendLine("Rail building ended!");
         }
+
         private void workerBuildRail_DoWork(object sender, DoWorkEventArgs e)
         {
             try
@@ -637,7 +655,7 @@ namespace FAIL
                     int _x, _y;
                     _x = Self.Location.X;
                     _y = Self.Location.Y;
-                    
+
                     Location _location = new Location(_x, _y);
 
                     SelectedRail.Path.Add(_location);
@@ -652,18 +670,19 @@ namespace FAIL
 
         private void rdoSelectedRail_CheckedChanged(object sender, EventArgs e)
         {
-
         }
-        #endregion
+
+        #endregion Worker Functions
 
         #region Methods
-        
+
         public Item GetTargetItem()
         {
             Stealth.Client.ClientRequestObjectTarget();
-            while (Stealth.Client.ClientTargetResponsePresent() == false);
+            while (Stealth.Client.ClientTargetResponsePresent() == false) ;
             return new Item(new Serial(Stealth.Client.ClientTargetResponse().ID));
         }
+
         private void CreateXMLFile(string Filename)
         {
             XmlDocument _doc = new XmlDocument();
@@ -675,6 +694,7 @@ namespace FAIL
             _doc.Save(_outStream);
             _outStream.Close();
         }
+
         private void UpdateGridView()
         {
             try
@@ -692,8 +712,8 @@ namespace FAIL
             {
                 MessageBox.Show(x.Message.ToString());
             }
-
         }
+
         private void SaveHouses()
         {
             try
@@ -714,6 +734,7 @@ namespace FAIL
                 MessageBox.Show(x.Message.ToString());
             }
         }
+
         private void LoadHouses()
         {
             try
@@ -739,11 +760,10 @@ namespace FAIL
             {
                 MessageBox.Show(x.Message.ToString());
             }
-            
         }
+
         private void LoadSettings()
         {
-
             try
             {
                 XmlSerializer _deserializer = new XmlSerializer(typeof(Settings));
@@ -759,6 +779,7 @@ namespace FAIL
                 MessageBox.Show(x.Message.ToString());
             }
         }
+
         private void LoadRails()
         {
             try
@@ -792,7 +813,7 @@ namespace FAIL
                 MessageBox.Show(x.Message.ToString());
             }
         }
-        #endregion
 
-    }   
+        #endregion Methods
+    }
 }

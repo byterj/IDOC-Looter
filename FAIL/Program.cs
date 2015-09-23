@@ -1,25 +1,25 @@
-﻿using System;
+﻿using ScriptSDK;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
-using System.Collections.Generic;
 using System.Windows.Forms;
-using ScriptSDK;
-
 
 namespace FAIL
 {
-    static class Program
+    internal static class Program
     {
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new FAIL());
         }
+
         public static T Cast<T>(this UOEntity obj) where T : UOEntity
         {
             return Activator.CreateInstance(typeof(T), obj.Serial) as T;
@@ -64,12 +64,11 @@ namespace FAIL
                     if (pi.Name == "Location")
                     {
                         Type st = typeof(Location);
-                        Location _location = (Location) pi.GetValue(item, null);
+                        Location _location = (Location)pi.GetValue(item, null);
                         string _string = _location.X.ToString() + ", " + _location.Y.ToString();
                         dr[pi.Name] = _string;
                         continue;
                     }
-
 
                     if (pi.GetValue(item, null) != null)
                     {

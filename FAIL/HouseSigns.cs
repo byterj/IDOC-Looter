@@ -1,5 +1,6 @@
 ﻿using ScriptSDK;
 using ScriptSDK.Attributes;
+using ScriptSDK.Items;
 
 namespace FAIL
 {
@@ -16,12 +17,11 @@ namespace FAIL
         0x0BFC, 0x0BFE, 0x0C00, 0x0C02, 0x0C04,
         0x0C06, 0x0C08, 0x0C0A, 0x0C0C, 0x0C0E,
         0x0C44 })]
-    public class HouseSigns : ScriptSDK.Items.Item
+    public class HouseSigns : Item
     {
         public HouseSigns(Serial serial)
             : base(serial)
         {
-
         }
     }
 }
