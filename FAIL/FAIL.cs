@@ -682,7 +682,7 @@ namespace FAIL
 
         private void workerWatch_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            txtWatchStatus.Text = e.UserState.ToString();
+            txtWatchStatus.AppendLine(e.UserState.ToString());
         }
 
         private void workerWatch_DoWork(object sender, DoWorkEventArgs e)
@@ -718,11 +718,16 @@ namespace FAIL
                                 _oldCondition = "Refreshed";
                     }
 
-                workerWatch.ReportProgress(0, DateTime.Now.ToString() + ' ' + _oldCondition);
+                workerWatch.ReportProgress(0, DateTime.Now.ToString() + ": " + _oldCondition);
 
                 while (Watching)
                 {
                     DateTime _time = DateTime.Now;
+
+                    if (!(Stealth.Client.IsObjectExists(_resultsList.First().Serial.Value)))
+                    {
+                        workerWatch.ReportProgress(0, DateTime.Now.ToString() + ": " + "House just fell, start loot worker!");
+                    }
 
                     _text = _resultsList.First().Tooltip.Split('|');
 
@@ -738,7 +743,7 @@ namespace FAIL
 
                     if (_condition != _oldCondition)
                     {
-                        workerWatch.ReportProgress(0, DateTime.Now.ToString() + ' ' + _condition);
+                        workerWatch.ReportProgress(0, DateTime.Now.ToString() + ": " + _condition);
                         _oldCondition = _condition;
                     }
 

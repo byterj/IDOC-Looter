@@ -60,6 +60,9 @@
             this.lblRunebooks = new System.Windows.Forms.Label();
             this.listRunebooks = new System.Windows.Forms.ListBox();
             this.tabWatch = new System.Windows.Forms.TabPage();
+            this.btnStopWatching = new System.Windows.Forms.Button();
+            this.btnStartWatching = new System.Windows.Forms.Button();
+            this.txtWatchStatus = new System.Windows.Forms.TextBox();
             this.tabLoot = new System.Windows.Forms.TabPage();
             this.tabHouses = new System.Windows.Forms.TabPage();
             this.btnRefreshDataGrid = new System.Windows.Forms.Button();
@@ -78,9 +81,6 @@
             this.workerBuildRail = new System.ComponentModel.BackgroundWorker();
             this.workerSearch = new System.ComponentModel.BackgroundWorker();
             this.workerCheckHouses = new System.ComponentModel.BackgroundWorker();
-            this.txtWatchStatus = new System.Windows.Forms.TextBox();
-            this.btnStartWatching = new System.Windows.Forms.Button();
-            this.btnStopWatching = new System.Windows.Forms.Button();
             this.workerWatch = new System.ComponentModel.BackgroundWorker();
             this.tabFailTabs.SuspendLayout();
             this.tabSearch.SuspendLayout();
@@ -436,6 +436,33 @@
             this.tabWatch.Text = "Watch";
             this.tabWatch.UseVisualStyleBackColor = true;
             // 
+            // btnStopWatching
+            // 
+            this.btnStopWatching.Location = new System.Drawing.Point(416, 596);
+            this.btnStopWatching.Name = "btnStopWatching";
+            this.btnStopWatching.Size = new System.Drawing.Size(149, 34);
+            this.btnStopWatching.TabIndex = 1;
+            this.btnStopWatching.Text = "Stop Watching";
+            this.btnStopWatching.UseVisualStyleBackColor = true;
+            // 
+            // btnStartWatching
+            // 
+            this.btnStartWatching.Location = new System.Drawing.Point(261, 596);
+            this.btnStartWatching.Name = "btnStartWatching";
+            this.btnStartWatching.Size = new System.Drawing.Size(149, 34);
+            this.btnStartWatching.TabIndex = 1;
+            this.btnStartWatching.Text = "Start Watching";
+            this.btnStartWatching.UseVisualStyleBackColor = true;
+            this.btnStartWatching.Click += new System.EventHandler(this.btnStartWatching_Click);
+            // 
+            // txtWatchStatus
+            // 
+            this.txtWatchStatus.Location = new System.Drawing.Point(8, 366);
+            this.txtWatchStatus.Multiline = true;
+            this.txtWatchStatus.Name = "txtWatchStatus";
+            this.txtWatchStatus.Size = new System.Drawing.Size(865, 224);
+            this.txtWatchStatus.TabIndex = 0;
+            // 
             // tabLoot
             // 
             this.tabLoot.Location = new System.Drawing.Point(4, 29);
@@ -615,33 +642,6 @@
             this.workerCheckHouses.DoWork += new System.ComponentModel.DoWorkEventHandler(this.workerCheckHouses_DoWork);
             this.workerCheckHouses.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.workerCheckHouses_ProgressChanged);
             this.workerCheckHouses.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.workerCheckHouses_RunWorkerCompleted);
-            // 
-            // txtWatchStatus
-            // 
-            this.txtWatchStatus.Location = new System.Drawing.Point(8, 366);
-            this.txtWatchStatus.Multiline = true;
-            this.txtWatchStatus.Name = "txtWatchStatus";
-            this.txtWatchStatus.Size = new System.Drawing.Size(865, 224);
-            this.txtWatchStatus.TabIndex = 0;
-            // 
-            // btnStartWatching
-            // 
-            this.btnStartWatching.Location = new System.Drawing.Point(261, 596);
-            this.btnStartWatching.Name = "btnStartWatching";
-            this.btnStartWatching.Size = new System.Drawing.Size(149, 34);
-            this.btnStartWatching.TabIndex = 1;
-            this.btnStartWatching.Text = "Start Watching";
-            this.btnStartWatching.UseVisualStyleBackColor = true;
-            this.btnStartWatching.Click += new System.EventHandler(this.btnStartWatching_Click);
-            // 
-            // btnStopWatching
-            // 
-            this.btnStopWatching.Location = new System.Drawing.Point(416, 596);
-            this.btnStopWatching.Name = "btnStopWatching";
-            this.btnStopWatching.Size = new System.Drawing.Size(149, 34);
-            this.btnStopWatching.TabIndex = 1;
-            this.btnStopWatching.Text = "Stop Watching";
-            this.btnStopWatching.UseVisualStyleBackColor = true;
             // 
             // workerWatch
             // 
