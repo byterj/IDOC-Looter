@@ -1,5 +1,6 @@
 ﻿using ScriptSDK;
 using ScriptSDK.Attributes;
+using ScriptSDK.Data;
 using ScriptSDK.Items;
 
 namespace FAIL

@@ -71,7 +71,7 @@ namespace FAIL
                     MessageBox.Show("Please connect a profile in Stealth and try again.");
 
                 var Player = PlayerMobile.GetPlayer();
-                Player.Backpack.Use();
+                Player.Backpack.DoubleClick();
 
                 if (File.Exists(RailFilePath))
                     LoadRails();
@@ -462,7 +462,7 @@ namespace FAIL
                             CurrentRail = _rail;
 
                             Item _runebook = new Item(new Serial(_rail.RunebookID));
-                            _runebook.Use();
+                            _runebook.DoubleClick();
                             GumpHelper.WaitForGump(_runebook.Serial.Value, 1200);
                             int _button = 49 + _rail.RuneNumber;
                             workerSearch.ReportProgress(0, "Recalling to start spot...");
@@ -516,7 +516,7 @@ namespace FAIL
 
                     Item _homeRunebook = new Item(new Serial(Settings.HomeRunebookID));
 
-                    _homeRunebook.Use();
+                    _homeRunebook.DoubleClick();
 
                     GumpHelper.WaitForGump(_homeRunebook.Serial.Value, 1200);
 
